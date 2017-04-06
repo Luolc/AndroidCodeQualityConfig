@@ -3,6 +3,7 @@
 def jacocoToolVersion = rootProject.ext.has('jacocoVersion') ? rootProject.ext.jacocoVersion : '0.7.7.201606060606'
 def moduleExcludes = rootProject.ext.has('moduleExcludes') ? rootProject.ext.moduleExcludes : [:]
 def ignoredByJacoco = rootProject.ext.has('ignoredByJacoco') ? rootProject.ext.ignoredByJacoco : []
+def isJava = plugins.hasPlugin('java')
 
 if (shouldApplyJacoco(project, ignoredByJacoco)) {
     apply plugin: 'jacoco'
@@ -27,13 +28,25 @@ if (shouldApplyJacoco(project, ignoredByJacoco)) {
         }
 
         sourceDirectories = project.files('src/main/java')
-        classDirectories = project.fileTree(dir: 'build/intermediates/classes/debug',
-                excludes: moduleExcludes[project.name] ?: [])
+        def classesDir
+        if (isJava) {
+            classesDir = 'build/classes/main'
+        } else {
+            classesDir = 'build/intermediates/classes/debug'
+        }
 
-        executionData = project.files('build/jacoco/testDebugUnitTest.exec')
+        def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', 'android/**/*.*']
+        classDirectories = project.fileTree(dir: classesDir,
+            excludes: moduleExcludes[project.name] ?: fileFilter)
+
+        if (isJava) {
+            executionData = project.files('build/jacoco/test.exec')
+        } else {
+            executionData = project.files('build/jacoco/testDebugUnitTest.exec')
+        }
 
         doFirst {
-            renameClasses(project.name + '/build/intermediates/classes/debug')
+            renameClasses(project.name + classesDir)
         }
     }
 }
