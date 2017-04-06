@@ -45,6 +45,9 @@
         <exclude name="AvoidPrefixingMethodParameters"/>
 
         <exclude name="OnlyOneReturn"/>
+
+        <!-- that rule is too buggy, too much false positives-->
+        <exclude name="DataflowAnomalyAnalysis"/>
     </rule>
     <rule ref="rulesets/java/coupling.xml">
         <!-- this is too strictly -->
